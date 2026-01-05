@@ -1,59 +1,75 @@
+#include <poll.h>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 #include "server/Client.hpp"
+#include "server/PollManager.hpp"
 #include "server/Server.hpp"
 #include "utils/Logger.hpp"
 
 int main(int argc, char** argv) {
-    uint16_t port = 8080;
-    if (argc > 1) {
-        port = std::atoi(argv[1]);
-        port == 0 && (port = 8080);
-    }
+    uint16_t port = (argc > 1) ? std::atoi(argv[1]) : 9090;
 
-    Logger::info("Starting WebServ...");
     Server server(port);
-
     if (!server.init()) {
         Logger::error("Failed to initialize server");
         return 1;
     }
 
-    Logger::info("Waiting for connection...");
+    Logger::info("Server ready");
 
-    int client_fd = server.acceptConnection();
-    if (client_fd < 0) {
-        Logger::error("Failed to accept connection");
-        return 1;
+    std::vector<Client*> clients;
+    PollManager          pollManager;
+    pollManager.addFd(server.getFd(), POLLIN);
+
+    while (true) {
+        if (pollManager.pollConnections(-1) < 0)
+            break;
+
+        // New connection
+        if (pollManager.hasEvent(0, POLLIN)) {
+            int fd = server.acceptConnection();
+            if (fd >= 0) {
+                clients.push_back(new Client(fd));
+                pollManager.addFd(fd, POLLIN);
+                Logger::info("Client connected");
+            }
+        }
+
+        // Handle client data
+        for (size_t i = 1; i < pollManager.size(); i++) {
+            if (pollManager.hasEvent(i, POLLIN)) {
+                Client* client = clients[i - 1];
+
+                if (client->receiveData() <= 0) {
+                    Logger::info("Client disconnected");
+                    client->closeConnection();
+                    delete client;
+                    clients.erase(clients.begin() + (i - 1));
+                    pollManager.removeFd(i);
+                    i--;
+                } else {
+                    std::cout << "\n[Request]\n" << client->getBuffer() << std::endl;
+
+                    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nhello friend\n";
+                    client->sendData(response);
+
+                    // Close connection after sending response
+                    client->closeConnection();
+                    delete client;
+                    clients.erase(clients.begin() + (i - 1));
+                    pollManager.removeFd(i);
+                    i--;
+                }
+            }
+        }
     }
 
-    Logger::info("Client connected!");
-    Client client(client_fd);
-
-    client.receiveData();
-    std::string request = client.getBuffer();
-    std::cout << "\n========== REQUEST ================================\n"
-              << request << "\n====================================================\n"
-              << std::endl;
-
-    std::string response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 13\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "Hello, World!";
-
-    std::cout << "\n========== RESPONSE ===============================\n"
-              << response << "\n====================================================\n"
-              << std::endl;
-
-    client.sendData(response);
-    Logger::info("Response sent");
-
-    client.closeConnection();
+    for (size_t i = 0; i < clients.size(); i++) {
+        clients[i]->closeConnection();
+        delete clients[i];
+    }
     server.stop();
-    Logger::info("Server stopped");
 
     return 0;
 }

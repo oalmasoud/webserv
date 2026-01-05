@@ -1,20 +1,23 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
+#include <netinet/in.h>
 #include <unistd.h>
 #include <string>
 
 class Client {
    private:
-    int         client_fd;
-    std::string buffer;
+    static const int INVALID_FD = -1;
+    int              client_fd;
+    std::string      buffer;
 
     Client(const Client&);
     Client& operator=(const Client&);
 
    public:
     Client();
-    Client(int fd);
+    explicit Client(int fd);
+    Client(int fd, const sockaddr_in& addr);
     ~Client();
 
     ssize_t     receiveData();
