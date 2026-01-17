@@ -44,6 +44,34 @@
 //     return response.toString();
 // }
 
+void printConfig(const ConfigParser& parser) {
+    std::vector<ServerConfig> servers = parser.getServers();
+    std::cout << "Parsed " << servers.size() << " server(s) from configuration." << std::endl;
+    for (size_t i = 0; i < servers.size(); ++i) {
+        const ServerConfig& srv = servers[i];
+        std::cout << "==================== Server " << i + 1 << " ====================" << std::endl;
+        std::cout << "Port        : " << srv.getPort() << std::endl;
+        std::string sname = srv.getServerName();
+        std::cout << "Server Name : " << (sname.empty() ? "<none>" : sname) << std::endl;
+        std::string sroot = srv.getRoot();
+        std::cout << "Root        : " << (sroot.empty() ? "<none>" : sroot) << std::endl;
+
+        std::vector<LocationConfig> locations = srv.getLocations();
+        std::cout << "Locations   : " << locations.size() << std::endl;
+        for (size_t j = 0; j < locations.size(); ++j) {
+            const LocationConfig& loc = locations[j];
+            std::cout << "  ----------------------------------------" << std::endl;
+            std::cout << "  Location " << j + 1 << std::endl;
+            std::string lpath = loc.getPath();
+            std::string lroot = loc.getRoot();
+            std::cout << "    Path     : " << (lpath.empty() ? "<none>" : lpath) << std::endl;
+            std::cout << "    Root     : " << (lroot.empty() ? "<none>" : lroot) << std::endl;
+            std::cout << "    AutoIndex: " << (loc.getAutoIndex() ? "on" : "off") << std::endl;
+        }
+        std::cout << std::endl;
+    }
+}
+
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
@@ -60,21 +88,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     // print parsed server configurations
-    std::vector<ServerConfig> servers = parser.getServers();
-    std::cout << "Parsed " << servers.size() << " server(s) from configuration." << std::endl;
-    for (size_t i = 0; i < servers.size(); ++i) {
-        std::cout << "Server " << i + 1 << ":" << std::endl;
-        std::cout << "  Port: " << servers[i].getPort() << std::endl;
-        std::cout << "  Server Name: " << servers[i].getServerName() << std::endl;
-        std::cout << "  Root: " << servers[i].getRoot() << std::endl;
-        std::vector<LocationConfig> locations = servers[i].getLocations();
-        for (size_t j = 0; j < locations.size(); ++j) {
-            std::cout << "    Location " << j + 1 << ":" << std::endl;
-            std::cout << "      Path: " << locations[j].getPath() << std::endl;
-            std::cout << "      Root: " << locations[j].getRoot() << std::endl;
-            std::cout << "      AutoIndex: " << (locations[j].getAutoIndex() ? "on" : "off") << std::endl;
-        }
-    }
+    printConfig(parser);
     // signal(SIGINT, signalHandler);
     // signal(SIGTERM, signalHandler);
 

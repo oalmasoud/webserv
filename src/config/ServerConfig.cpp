@@ -14,6 +14,13 @@ void ServerConfig::addLocation(const LocationConfig& loc) {
     locations.push_back(loc);
 }
 
+void ServerConfig::indexLocations() {
+    for (size_t i = 0; i < locations.size(); ++i) {
+        if (locations[i].getRoot().empty())
+            locations[i].setRoot(root);
+    }
+}
+
 int ServerConfig::getPort() const {
     return port;
 }

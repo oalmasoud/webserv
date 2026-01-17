@@ -12,14 +12,11 @@ class Server {
     uint16_t         port;
     bool             running;
 
-    // steps to initialize server
     bool createSocket();
     bool configureSocket();
     bool bindSocket();
     bool startListening();
     bool createNonBlockingSocket(int fd);
-
-    // force non-copyable for copy constructor and assignment operator
     Server(const Server&);
     Server& operator=(const Server&);
 
