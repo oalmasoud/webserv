@@ -16,13 +16,21 @@ bool        checkAllowedMethods(const std::string& m);
 bool        parseKeyValue(const std::string& line, std::string& key, std::vector<std::string>& values);
 bool        splitByChar(const std::string& line, std::string& key, std::string& value, char endChar);
 size_t      convertMaxBodySize(const std::string& maxBody);
-std::string formatSize(size_t size);
-
+bool        isStringInVector(const std::string& toFind, const std::vector<std::string>& fromFind);
+std::string normalizePath(const std::string& path);
+bool        pathStartsWith(const std::string& path, const std::string& prefix);
 template <typename type>
 std::string typeToString(type _value) {
     std::stringstream ss;
     ss << _value;
     return ss.str();
+}
+template <typename type>
+type stringToType(const std::string& str) {
+    std::stringstream ss(str);
+    type              value;
+    ss >> value;
+    return value;
 }
 
 // TODO : add time convert for  session timeout

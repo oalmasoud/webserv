@@ -71,12 +71,15 @@ bool convertFileToLines(std::string file, std::vector<std::string>& lines) {
 }
 
 bool checkAllowedMethods(const std::string& m) {
-    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"};
-    for (size_t i = 0; i < sizeof(methods) / sizeof(methods[0]); i++) {
-        if (methods[i] == m)
-            return true;
-    }
-    return false;
+    std::vector<std::string> methods;
+    methods.push_back("GET");
+    methods.push_back("POST");
+    methods.push_back("DELETE");
+    methods.push_back("PUT");
+    methods.push_back("PATCH");
+    methods.push_back("HEAD");
+    methods.push_back("OPTIONS");
+    return isStringInVector(m, methods);
 }
 
 bool splitByChar(const std::string& line, std::string& key, std::string& value, char endChar) {
@@ -100,34 +103,51 @@ bool parseKeyValue(const std::string& line, std::string& key, std::vector<std::s
     }
     return !values.empty();
 }
+
 size_t convertMaxBodySize(const std::string& maxBody) {
+    if (maxBody.empty())
+        return 0;
+
+    size_t            size = 0;
     char              unit = maxBody[maxBody.size() - 1];
-    std::stringstream ss(maxBody.substr(0, maxBody.size() - 1));
-    size_t            size;
+    std::stringstream ss(std::isdigit(unit) ? maxBody : maxBody.substr(0, maxBody.size() - 1));
     ss >> size;
-    switch (unit) {
-        case 'K':
-        case 'k':
-            return size * 1024;
-        case 'M':
-        case 'm':
-            return size * 1024 * 1024;
-        case 'G':
-        case 'g':
-            return size * 1024 * 1024 * 1024;
-        default:
-            return size;
-    }
+    if (unit == 'K' || unit == 'k')
+        return size * 1024;
+    if (unit == 'M' || unit == 'm')
+        return size * 1024 * 1024;
+    if (unit == 'G' || unit == 'g')
+        return size * 1024 * 1024 * 1024;
+    return size;
 }
 
-std::string formatSize(size_t size) {
-    if (size < 1024) {
-        return typeToString(size);
-    } else if (size < 1024 * 1024) {
-        return typeToString(size / 1024) + " K";
-    } else if (size < 1024 * 1024 * 1024) {
-        return typeToString(size / (1024 * 1024)) + " M";
-    } else {
-        return typeToString(size / (1024 * 1024 * 1024)) + " G";
+bool isStringInVector(const std::string& toFind, const std::vector<std::string>& fromFind) {
+    for (size_t i = 0; i < fromFind.size(); i++) {
+        if (fromFind[i] == toFind) {
+            return true;
+        }
     }
+    return false;
+}
+
+std::string normalizePath(const std::string& path) {
+    std::string normalized = path;
+
+    if (normalized.empty())
+        return "/";
+    std::string result;
+    if (normalized[0] != '/')
+        result += '/';
+    for (size_t i = 0; i < normalized.length(); i++) {
+        if (normalized[i] == '/' && i + 1 < normalized.length() && normalized[i + 1] == '/')
+            continue;
+        result += normalized[i];
+    }
+    return result;
+}
+
+bool pathStartsWith(const std::string& path, const std::string& prefix) {
+    if (prefix.length() > path.length())
+        return false;
+    return path.compare(0, prefix.length(), prefix) == 0;
 }

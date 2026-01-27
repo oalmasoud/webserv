@@ -21,7 +21,7 @@ class ServerConfig {
     //getters
     int                                getPort() const;
     std::string                        getInterface() const;
-    std::vector<LocationConfig>&       getLocations();
+    std::vector<LocationConfig>&       getLocations(); // to set parameter in locations from server
     const std::vector<LocationConfig>& getLocations() const;
     std::string                        getServerName() const;
     std::string                        getRoot() const;

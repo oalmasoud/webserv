@@ -3,49 +3,50 @@
 
 #include <string>
 #include <vector>
-#include "../config/ServerConfig.hpp"
 #include "../config/LocationConfig.hpp"
+#include "../config/ServerConfig.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
-struct RouteResult {
-    bool                found;
-    const LocationConfig* location;
-    const ServerConfig*   server;
-    std::string         resolvedPath;
-    std::string         matchedPath;
-    std::string         remainingPath;
-    bool                isRedirect;
-    std::string         redirectUrl;
-    int                 statusCode;
-    std::string         errorMessage;
-
-    RouteResult();
-};
-
 class Router {
    public:
-    Router();
-    Router(const std::vector<ServerConfig>& servers);
+    Router(const std::vector<ServerConfig>& servers, const HttpRequest& request);
     ~Router();
+    const LocationConfig* bestMatchLocation(const std::vector<LocationConfig>& locationsMatchServer) const;
+    void                  processRequest();
+    const ServerConfig*   findServer() const;
+    std::string           resolveFilesystemPath() const;
+    bool                  checkBodySize(const LocationConfig& location) const;
+    bool                  isCgiRequest(const std::string& path, const LocationConfig& location) const;
+    bool                  isUploadRequest(const std::string& method, const LocationConfig& location) const;
+    const ServerConfig*   getDefaultServer(int port) const;
 
-    void init(const std::vector<ServerConfig>& servers);
-    RouteResult route(const HttpRequest& request, int port) const;
-    const ServerConfig* findServer(const std::string& hostHeader, int port) const;
-    const LocationConfig* findLocation(const std::string& uri, const ServerConfig& server) const;
-    bool isMethodAllowed(const std::string& method, const LocationConfig& location) const;
-    std::string resolvePath(const std::string& uri, const LocationConfig& location) const;
-    bool checkBodySize(size_t contentLength, const LocationConfig& location) const;
-    size_t parseBodySize(const std::string& sizeStr) const;
-    bool isCgiRequest(const std::string& path, const LocationConfig& location) const;
-    bool isUploadRequest(const std::string& method, const LocationConfig& location) const;
-    const ServerConfig* getDefaultServer(int port) const;
+    bool getIsPathFound() const;
+    bool getIsRedirect() const;
+    int  getStatusCode() const;
 
-   private:
-    std::vector<ServerConfig> _servers;
-    std::string extractHost(const std::string& hostHeader) const;
-    std::string normalizePath(const std::string& path) const;
-    bool        pathStartsWith(const std::string& path, const std::string& prefix) const;
+    const LocationConfig* getLocation() const;
+    const ServerConfig*   getServer() const;
+    const std::string&    getPathRootUri() const;
+    const std::string&    getMatchedPath() const;
+    const std::string&    getRemainingPath() const;
+    const std::string&    getRedirectUrl() const;
+    const std::string&    getErrorMessage() const;
+
+    private:
+
+    std::vector<ServerConfig> _servers;      // params from config
+    HttpRequest               _request;      // param from http request
+    bool                      isPathFound;   // is for checking if path of uri found in locations
+    std::string               pathRootUri;   // the full path after combining root and uri
+    std::string               matchedPath;   // the part of uri that matched with location path like /images
+    std::string               remainingPath; // the part of uri that is after matched path like /photo.jpg
+    const LocationConfig*     matchLocation; // the location that matched with uri
+    const ServerConfig*       matchServer;   // the server that matched with host and port
+    std::string               redirectUrl;   // the URL to redirect to if isRedirect is true
+    bool                      isRedirect;    // indicates if the request should be redirected
+    int                       statusCode;    // HTTP status code for the response
+    std::string               errorMessage;  // error message if any error occurs
 };
 
 #endif

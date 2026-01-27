@@ -1,7 +1,7 @@
 
 #include "HttpRequest.hpp"
 /* Header Section */
-// POST /upload/file.txt?user=loay&id=42 HTTP/1.1\r\n (request line)
+// POST ?user=loay&id=42 HTTP/1.1\r\n (request line)
 // Host: localhost:8080\r\n (header lines)
 // User-Agent: curl/7.88.1\r\n (header lines)
 // Accept: */*\r\n (header lines)
@@ -44,6 +44,9 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
     if (!checkAllowedMethods(method))
         return false;
 
+    std::string rawUri = uri;
+    if (!splitByChar(rawUri, uri, fragment, '#'))
+        fragment = "";
     if (!splitByChar(uri, uri, queryString, '?'))
         queryString = "";
 
@@ -75,7 +78,12 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
     } else {
         contentLength = 0;
     }
-    host = headers["host"];
+    std::string hostKey = headers["host"];
+    size_t      sepHost = hostKey.find(':');
+    if (sepHost == std::string::npos)
+        return false;
+    host = hostKey.substr(0, sepHost);
+    port = stringToType<int>(hostKey.substr(sepHost + 1));
     return true;
 }
 
@@ -118,7 +126,9 @@ std::string HttpRequest::getContentType() const {
 std::string HttpRequest::getHost() const {
     return host;
 }
-
+int HttpRequest::getPort() const {
+    return port;
+}
 // Validators
 bool HttpRequest::isComplete() const {
     return !method.empty() && !uri.empty() && !httpVersion.empty();

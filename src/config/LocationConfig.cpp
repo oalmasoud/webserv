@@ -23,6 +23,8 @@ bool LocationConfig::setRoot(const std::vector<std::string>& r) {
     if (r.size() != 1)
         return Logger::error("root takes exactly one value");
     root = r[0];
+    if (root[root.length() - 1] == '/')
+        root.erase(root.length() - 1);
     return true;
 }
 

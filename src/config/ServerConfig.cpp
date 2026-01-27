@@ -42,6 +42,8 @@ bool ServerConfig::setRoot(const std::vector<std::string>& r) {
     if (r.size() != 1)
         return Logger::error("root takes exactly one value");
     root = r[0];
+    if (root[root.length() - 1] == '/')
+        root.erase(root.length() - 1);
     return true;
 }
 void ServerConfig::setRoot(const std::string& r) {
@@ -89,9 +91,9 @@ std::vector<LocationConfig>& ServerConfig::getLocations() {
     return locations;
 }
 
-// const std::vector<LocationConfig>& ServerConfig::getLocations() const {
-//     return locations;
-// }
+const std::vector<LocationConfig>& ServerConfig::getLocations() const {
+    return locations;
+}
 std::vector<std::string> ServerConfig::getIndexes() const {
     return indexes;
 }

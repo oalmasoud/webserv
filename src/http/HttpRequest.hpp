@@ -11,11 +11,13 @@ class HttpRequest {
     std::string                        uri;           // /path/to/resource
     std::string                        httpVersion;   // HTTP/1.1
     std::string                        queryString;   // ?key=value
+    std::string                        fragment;      // #section
     std::map<std::string, std::string> headers;       // Header key-value pairs
     std::string                        body;          // Request body
     std::string                        contentType;   // e.g., text/html Mime type
     size_t                             contentLength; // e.g., 348
-    std::string                        host;
+    std::string                        host;          // Host from Host header
+    int                                port;          // Port from Host header
 
    public:
     // Parsing
@@ -31,6 +33,7 @@ class HttpRequest {
     size_t      getContentLength() const;
     std::string getContentType() const;
     std::string getHost() const;
+    int         getPort() const;
 
     // Validators
     bool isComplete() const;
