@@ -5,7 +5,7 @@
 # Comprehensive test suite for configuration file parsing
 # ============================================================
 
-WEBSERV="./webserv"
+WEBSERV="./config_tester"
 TEST_DIR="tests/config_tests"
 PASS=0
 FAIL=0

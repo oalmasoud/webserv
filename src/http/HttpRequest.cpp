@@ -19,42 +19,41 @@ bool HttpRequest::parse(const std::string& raw) {
     std::string headerSection = raw.substr(0, headerEnd);
     std::string bodySection   = raw.substr(headerEnd + 4); // +4 to skip \r\n\r\n
     if (!parseHeaders(headerSection))
-        return false;
+        return Logger::error("Failed to parse headers");
     if (!parseBody(bodySection))
-        return false;
+        return Logger::error("Failed to parse body");
     return true;
 }
 bool HttpRequest::parseHeaders(const std::string& headerSection) {
     size_t lineEnd = headerSection.find("\r\n");
     if (lineEnd == std::string::npos)
-        return false;
+        return Logger::error("Failed to find end of request line");
 
     std::string              requestLine = headerSection.substr(0, lineEnd);
     std::vector<std::string> values;
     if (!parseKeyValue(requestLine, method, values))
-        return false;
+        return Logger::error("Failed to parse request line");
     if (values.size() != 2)
-        return false;
+        return Logger::error("Invalid request line format");
     uri         = values[0];
     httpVersion = values[1];
     if (method.empty() || uri.empty() || httpVersion.empty())
-        return false;
-
+        return Logger::error("Empty method, URI, or HTTP version");
     method = toUpperWords(method);
     if (!checkAllowedMethods(method))
-        return false;
-
-    std::string rawUri = uri;
-    if (!splitByChar(rawUri, uri, fragment, '#'))
+        return Logger::error("Method not allowed");
+    if (!splitByChar(uri, uri, fragment, '#'))
         fragment = "";
     if (!splitByChar(uri, uri, queryString, '?'))
         queryString = "";
-
     size_t pos = lineEnd + 2; // +2 to skip \r\n
     while (pos < headerSection.size()) {
         lineEnd = headerSection.find("\r\n", pos);
-        if (lineEnd == std::string::npos)
-            break;
+
+        // If no more \r\n found, process remaining content as last header
+        if (lineEnd == std::string::npos) {
+            lineEnd = headerSection.size();
+        }
 
         std::string line = headerSection.substr(pos, lineEnd - pos);
         if (line.empty())
@@ -62,7 +61,7 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
 
         std::string key, value;
         if (!splitByChar(line, key, value, ':'))
-            return false;
+            return Logger::error("Failed to parse header line");
 
         std::string headerKey = toLowerWords(trimSpacesComments(key));
         std::string headerVal = trimSpacesComments(value);
@@ -81,7 +80,7 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
     std::string hostKey = headers["host"];
     size_t      sepHost = hostKey.find(':');
     if (sepHost == std::string::npos)
-        return false;
+        return Logger::error("Missing port in Host header");
     host = hostKey.substr(0, sepHost);
     port = stringToType<int>(hostKey.substr(sepHost + 1));
     return true;
@@ -91,10 +90,10 @@ bool HttpRequest::parseBody(const std::string& bodySection) {
     body = bodySection;
     if (!headers["content-length"].empty()) {
         if (body.size() != contentLength)
-            return false;
+            return Logger::error("Body length does not match Content-Length");
     } else {
         if (!body.empty())
-            return false;
+            return Logger::error("Body present without Content-Length header");
     }
     return true;
 }

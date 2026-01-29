@@ -1,5 +1,5 @@
 #include "Utils.hpp"
-
+#include <stdexcept>
 std::string toUpperWords(const std::string& str) {
     std::string result = str;
     for (size_t i = 0; i < result.size(); ++i) {
@@ -83,11 +83,12 @@ bool checkAllowedMethods(const std::string& m) {
 }
 
 bool splitByChar(const std::string& line, std::string& key, std::string& value, char endChar) {
-    size_t pos = line.find(endChar);
+    std::string s   = line;
+    size_t      pos = s.find(endChar);
     if (pos == std::string::npos)
         return false;
-    key   = line.substr(0, pos);
-    value = line.substr(pos + 1);
+    key   = s.substr(0, pos);
+    value = s.substr(pos + 1);
     return true;
 }
 

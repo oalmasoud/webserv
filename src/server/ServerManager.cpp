@@ -57,6 +57,7 @@ bool ServerManager::run() {
             eventCount--;
         }
     }
+    return true;
 }
 
 bool ServerManager::acceptNewConnection(Server* server) {
