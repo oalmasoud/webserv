@@ -2,6 +2,8 @@
 #define HTTPRESPONSE_HPP
 #include <iostream>
 #include <map>
+#include "../utils/Utils.hpp"
+
 class HttpResponse {
    private:
     int                                statusCode;

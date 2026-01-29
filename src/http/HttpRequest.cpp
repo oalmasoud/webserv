@@ -1,4 +1,3 @@
-
 #include "HttpRequest.hpp"
 /* Header Section */
 // POST ?user=loay&id=42 HTTP/1.1\r\n (request line)

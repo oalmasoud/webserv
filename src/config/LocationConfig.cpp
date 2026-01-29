@@ -1,5 +1,5 @@
 #include "LocationConfig.hpp"
-#include "../utils/Logger.hpp"
+
 LocationConfig::LocationConfig(const std::string& p)
     : path(p),
       root(""),

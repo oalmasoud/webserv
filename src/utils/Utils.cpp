@@ -1,5 +1,5 @@
 #include "Utils.hpp"
-#include <stdexcept>
+
 std::string toUpperWords(const std::string& str) {
     std::string result = str;
     for (size_t i = 0; i < result.size(); ++i) {

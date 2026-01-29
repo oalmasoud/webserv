@@ -1,7 +1,8 @@
 #ifndef ROUTER_HPP
 #define ROUTER_HPP
 
-#include <string>
+#include <cstdlib>
+#include <iostream>
 #include <vector>
 #include "../config/LocationConfig.hpp"
 #include "../config/ServerConfig.hpp"
@@ -33,8 +34,7 @@ class Router {
     const std::string&    getRedirectUrl() const;
     const std::string&    getErrorMessage() const;
 
-    private:
-
+   private:
     std::vector<ServerConfig> _servers;      // params from config
     HttpRequest               _request;      // param from http request
     bool                      isPathFound;   // is for checking if path of uri found in locations

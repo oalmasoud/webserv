@@ -1,4 +1,5 @@
 #include "MimeTypes.hpp"
+
 MimeTypes::MimeTypes(const std::string& extension) : extension(extension) {
     if (extension == "html" || extension == "htm")
         mimeType = "text/html";

@@ -2,6 +2,7 @@
 #define LOCATION_CONFIG_HPP
 #include <iostream>
 #include <vector>
+#include "../utils/Logger.hpp"
 #include "../utils/Utils.hpp"
 class LocationConfig {
    public:
@@ -25,8 +26,8 @@ class LocationConfig {
     void setClientMaxBody(const std::string& c);
     bool setClientMaxBody(const std::vector<std::string>& c);
 
-    void addAllowedMethod(const std::string& m);
-    bool setAllowedMethods(const std::vector<std::string>& m);
+    void                     addAllowedMethod(const std::string& m);
+    bool                     setAllowedMethods(const std::vector<std::string>& m);
     std::string              getPath() const;
     std::string              getRoot() const;
     bool                     getAutoIndex() const;

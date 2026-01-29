@@ -1,6 +1,5 @@
 #include "ServerConfig.hpp"
-#include <cstdlib>
-#include "../utils/Logger.hpp"
+
 
 ServerConfig::ServerConfig()
     : port(-1), interface(""), locations(), serverName(""), root(""), indexes(std::vector<std::string>(1, "index.html")), clientMaxBodySize("") {}

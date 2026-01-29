@@ -2,7 +2,7 @@
 #define CONFIG_PARSER_HPP
 
 #include <map>
-#include <string>
+#include <iostream>
 #include <vector>
 #include "../utils/Utils.hpp"
 #include "LocationConfig.hpp"

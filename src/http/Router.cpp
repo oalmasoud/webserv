@@ -1,5 +1,4 @@
 #include "Router.hpp"
-#include <cstdlib>
 
 Router::Router(const std::vector<ServerConfig>& servers, const HttpRequest& request)
     : _servers(servers),

@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 #include "../utils/Utils.hpp"
+
 class HttpRequest {
    private:
     std::string                        method;        // GET, POST, DELETE

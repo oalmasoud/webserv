@@ -1,8 +1,11 @@
 #ifndef SERVER_CONFIG_HPP
 #define SERVER_CONFIG_HPP
+#include <cstdlib>
 #include <iostream>
 #include <vector>
+#include "../utils/Logger.hpp"
 #include "LocationConfig.hpp"
+
 class ServerConfig {
    public:
     ServerConfig();
