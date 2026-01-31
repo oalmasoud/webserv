@@ -9,6 +9,4 @@ typedef std::vector<std::string>            VectorString;
 typedef std::map<std::string, std::string>  MapString;
 typedef std::map<std::string, VectorString> MapValueVector;
 
-
-
 #endif

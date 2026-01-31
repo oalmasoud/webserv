@@ -1,28 +1,18 @@
 #include "ServerConfig.hpp"
 
+ServerConfig::ServerConfig()
+    : port(-1), interface(""), locations(), serverName(""), root(""), indexes(VectorString(1, "index.html")), clientMaxBodySize("") {}
 
-ServerConfig::ServerConfig() :
-    port(-1),
-    interface(""),
-    locations(),
-    serverName(""),
-    root(""),
-    indexes(std::vector<std::string>(1, "index.html")),
-    clientMaxBodySize("")
-{}
+ServerConfig::ServerConfig(const ServerConfig& other)
+    : port(other.port),
+      interface(other.interface),
+      locations(other.locations),
+      serverName(other.serverName),
+      root(other.root),
+      indexes(other.indexes),
+      clientMaxBodySize(other.clientMaxBodySize) {}
 
-ServerConfig::ServerConfig(const ServerConfig& other) :
-    port(other.port),
-    interface(other.interface),
-    locations(other.locations),
-    serverName(other.serverName),
-    root(other.root),
-    indexes(other.indexes),
-    clientMaxBodySize(other.clientMaxBodySize)
-{}
-
-ServerConfig &ServerConfig::operator=(const ServerConfig &other)
-{
+ServerConfig& ServerConfig::operator=(const ServerConfig& other) {
     if (this != &other) {
         port              = other.port;
         interface         = other.interface;
@@ -40,7 +30,7 @@ ServerConfig::~ServerConfig() {
     locations.clear();
 }
 // setters
-bool ServerConfig::setIndexes(const std::vector<std::string>& i) {
+bool ServerConfig::setIndexes(const VectorString& i) {
     if (!indexes.empty())
         return Logger::error("duplicate index");
     if (i.empty())
@@ -48,7 +38,7 @@ bool ServerConfig::setIndexes(const std::vector<std::string>& i) {
     indexes = i;
     return true;
 }
-bool ServerConfig::setClientMaxBody(const std::vector<std::string>& c) {
+bool ServerConfig::setClientMaxBody(const VectorString& c) {
     if (!clientMaxBodySize.empty())
         return Logger::error("duplicate client_max_body_size");
     if (c.size() != 1)
@@ -59,7 +49,7 @@ bool ServerConfig::setClientMaxBody(const std::vector<std::string>& c) {
 void ServerConfig::setClientMaxBody(const std::string& c) {
     clientMaxBodySize = c;
 }
-bool ServerConfig::setServerName(const std::vector<std::string>& name) {
+bool ServerConfig::setServerName(const VectorString& name) {
     if (!serverName.empty())
         return Logger::error("duplicate server_name");
     if (name.size() != 1)
@@ -67,7 +57,7 @@ bool ServerConfig::setServerName(const std::vector<std::string>& name) {
     serverName = name[0];
     return true;
 }
-bool ServerConfig::setRoot(const std::vector<std::string>& r) {
+bool ServerConfig::setRoot(const VectorString& r) {
     if (!root.empty())
         return Logger::error("duplicate root");
     if (r.size() != 1)
@@ -80,7 +70,7 @@ bool ServerConfig::setRoot(const std::vector<std::string>& r) {
 void ServerConfig::setRoot(const std::string& r) {
     root = r;
 }
-bool ServerConfig::setListen(const std::vector<std::string>& l) {
+bool ServerConfig::setListen(const VectorString& l) {
     if (l.size() != 1)
         return Logger::error("listen takes exactly one value");
     if (!interface.empty() || port != -1)
@@ -106,7 +96,7 @@ bool ServerConfig::setListen(const std::vector<std::string>& l) {
 void ServerConfig::addLocation(const LocationConfig& loc) {
     locations.push_back(loc);
     if (locations.back().getRoot().empty())
-        locations.back().setRoot(std::vector<std::string>(1, root));
+        locations.back().setRoot(VectorString(1, root));
     if (locations.back().getIndexes().empty())
         locations.back().setIndexes(indexes);
 }
@@ -125,7 +115,7 @@ std::vector<LocationConfig>& ServerConfig::getLocations() {
 const std::vector<LocationConfig>& ServerConfig::getLocations() const {
     return locations;
 }
-std::vector<std::string> ServerConfig::getIndexes() const {
+VectorString ServerConfig::getIndexes() const {
     return indexes;
 }
 std::string ServerConfig::getServerName() const {

@@ -7,20 +7,20 @@
 #include "LocationConfig.hpp"
 
 class ServerConfig {
-    public:
-        ServerConfig();
-        ServerConfig(const ServerConfig &other);
-        ServerConfig &operator=(const ServerConfig& other);
-        ~ServerConfig();
+   public:
+    ServerConfig();
+    ServerConfig(const ServerConfig& other);
+    ServerConfig& operator=(const ServerConfig& other);
+    ~ServerConfig();
 
     // setters
-    bool setIndexes(const std::vector<std::string>& i);
-    bool setClientMaxBody(const std::vector<std::string>& c);
+    bool setIndexes(const VectorString& i);
+    bool setClientMaxBody(const VectorString& c);
     void setClientMaxBody(const std::string& c);
-    bool setServerName(const std::vector<std::string>& name);
-    bool setRoot(const std::vector<std::string>& root);
+    bool setServerName(const VectorString& name);
+    bool setRoot(const VectorString& root);
     void setRoot(const std::string& root);
-    bool setListen(const std::vector<std::string>& l);
+    bool setListen(const VectorString& l);
     void addLocation(const LocationConfig& loc);
 
     //getters
@@ -30,7 +30,7 @@ class ServerConfig {
     const std::vector<LocationConfig>& getLocations() const;
     std::string                        getServerName() const;
     std::string                        getRoot() const;
-    std::vector<std::string>           getIndexes() const;
+    VectorString                       getIndexes() const;
     std::string                        getClientMaxBody() const;
 
    private:
@@ -40,9 +40,9 @@ class ServerConfig {
     std::vector<LocationConfig> locations; // it least one location
 
     // optional server parameters
-    std::string              serverName;        // default: ""
-    std::string              root;              // default: use for location if not set(be required)
-    std::vector<std::string> indexes;           // default: "index.html"
-    std::string              clientMaxBodySize; // default: "1M" or inherited from http config
+    std::string  serverName;        // default: ""
+    std::string  root;              // default: use for location if not set(be required)
+    VectorString indexes;           // default: "index.html"
+    std::string  clientMaxBodySize; // default: "1M" or inherited from http config
 };
 #endif

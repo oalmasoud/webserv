@@ -6,10 +6,10 @@
 
 class HttpResponse {
    private:
-    int                                statusCode;
-    std::string                        statusMessage;
-    std::map<std::string, std::string> headers;
-    std::string                        body;
+    int         statusCode;
+    std::string statusMessage;
+    MapString   headers;
+    std::string body;
 
    public:
     HttpResponse();

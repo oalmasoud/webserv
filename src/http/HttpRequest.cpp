@@ -140,17 +140,17 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
             break;
 
         std::string key, value;
-        if (!splitByChar(line, key, value, ':') && (errorCode = HTTP_BAD_REQUEST)) 
+        if (!splitByChar(line, key, value, ':') && (errorCode = HTTP_BAD_REQUEST))
             return Logger::error("Failed to parse header line");
 
         std::string headerKey = toLowerWords(trimSpaces(key));
         std::string headerVal = trimSpaces(value);
 
         // ! RFC 7230: Multiple headers with same name should append with comma
-        if (!headers[headerKey].empty()) 
-            headers[headerKey] += "," + headerVal;
-         else
+        if (!hasNonEmptyValue(headers, headerKey))
             headers[headerKey] = headerVal;
+        else
+            headers[headerKey] += "," + headerVal;
         pos = lineEnd + 2;
     }
 
@@ -161,12 +161,14 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
     }
 
     // ! Parse cookies if present
-    if (headers.find("cookie") != headers.end())
-        parseCookies(headers["cookie"]);
+    std::string cookieHeader = getValue(headers, std::string("cookie"), std::string());
+    if (!cookieHeader.empty())
+        parseCookies(cookieHeader);
 
     // ! Extract Content-Type
-    if (!headers["content-type"].empty())
-        contentType = headers["content-type"];
+    std::string ct = getValue(headers, std::string("content-type"), std::string());
+    if (!ct.empty())
+        contentType = ct;
 
     // ! Validate and extract Content-Length
     if (!validateContentLength()) {
@@ -175,10 +177,13 @@ bool HttpRequest::parseHeaders(const std::string& headerSection) {
 
     // ! Extract host and port
     std::string portStr;
-    if (!splitByChar(headers["host"], host, portStr, ':')) {
-        host = headers["host"];
-    } else {
-        port = stringToType<int>(portStr);
+    std::string hostHeader = getValue(headers, std::string("host"), std::string());
+    if (!hostHeader.empty()) {
+        if (!splitByChar(hostHeader, host, portStr, ':')) {
+            host = hostHeader;
+        } else {
+            port = stringToType<int>(portStr);
+        }
     }
 
     return true;
@@ -189,7 +194,7 @@ bool HttpRequest::parseBody(const std::string& bodySection) {
     // ! If method typically has a body (POST, PUT, PATCH)
     bool methodExpectsBody = (method == "POST" || method == "PUT" || method == "PATCH");
 
-    if (!headers["content-length"].empty()) {
+    if (hasNonEmptyValue(headers, std::string("content-length"))) {
         // ! Content-Length is present, validate body size matches
         if (body.size() != contentLength) {
             errorCode = HTTP_BAD_REQUEST;
@@ -216,7 +221,7 @@ bool HttpRequest::parseBody(const std::string& bodySection) {
 bool HttpRequest::validateHostHeader() {
     // ! HTTP/1.1 requires Host header
     if (httpVersion == "HTTP/1.1") {
-        std::map<std::string, std::string>::const_iterator it = headers.find("host");
+        MapString::const_iterator it = headers.find("host");
         if (it == headers.end() || it->second.empty()) {
             return false;
         }
@@ -247,7 +252,7 @@ bool HttpRequest::validateContentLength() {
 }
 // ? example Cookie: "key1=value1; key2=value2; key3=value3" & "session=42; theme=dark; lang=en"
 void HttpRequest::parseCookies(const std::string& cookieHeader) {
-    std::vector<std::string> cookiePairs;
+    VectorString cookiePairs;
     splitByString(cookieHeader, cookiePairs, ";");
     for (size_t i = 0; i < cookiePairs.size(); ++i) {
         std::string key, value;
@@ -267,7 +272,7 @@ std::string HttpRequest::getHttpVersion() const {
     return httpVersion;
 }
 std::string HttpRequest::getHeader(const std::string& key) const {
-    std::string    lowerKey = toLowerWords(key);
+    std::string               lowerKey = toLowerWords(key);
     MapString::const_iterator it       = headers.find(lowerKey);
     if (it != headers.end()) {
         return it->second;
@@ -301,8 +306,12 @@ bool HttpRequest::hasBody() const {
     return !body.empty();
 }
 std::string HttpRequest::getCookie(const std::string& key) const {
-    std::string    lowerKey = toLowerWords(key);
-    return cookies[lowerKey];
+    std::string                     lowerKey = toLowerWords(key);
+    const MapString::const_iterator it       = cookies.find(lowerKey);
+    if (it == cookies.end()) {
+        return "";
+    }
+    return it->second;
 }
 const MapString& HttpRequest::getCookies() const {
     return cookies;

@@ -40,6 +40,22 @@ std::string trimSpaces(const std::string& s) {
     return s.substr(start, end - start + 1);
 }
 
+std::string findValueInMap(const MapString& map, const std::string& key) {
+    MapString::const_iterator it = map.find(key);
+    if (it != map.end()) {
+        return it->second;
+    }
+    return "";
+}
+std::string findValueInVector(const VectorString& map, const std::string& key) {
+    for (size_t i = 0; i < map.size(); i++) {
+        if (map[i] == key) {
+            return map[i];
+        }
+    }
+    return "";
+}
+
 std::string trimSpacesComments(const std::string& s) {
     size_t start = s.find_first_not_of(" \t\r\n");
     if (start == std::string::npos || s[start] == '#')
@@ -52,7 +68,7 @@ std::string trimSpacesComments(const std::string& s) {
     return s.substr(start, end - start + 1);
 }
 
-bool convertFileToLines(std::string file, std::vector<std::string>& lines) {
+bool convertFileToLines(std::string file, VectorString& lines) {
     std::ifstream ff(file.c_str());
     if (!ff.is_open()) {
         return false;
@@ -88,7 +104,7 @@ bool convertFileToLines(std::string file, std::vector<std::string>& lines) {
 }
 
 bool checkAllowedMethods(const std::string& m) {
-    std::vector<std::string> methods;
+    VectorString methods;
     methods.push_back("GET");
     methods.push_back("POST");
     methods.push_back("DELETE");
@@ -109,7 +125,7 @@ bool splitByChar(const std::string& line, std::string& key, std::string& value, 
     return true;
 }
 
-bool splitByString(const std::string& line, std::vector<std::string>& values, const std::string& delimiter) {
+bool splitByString(const std::string& line, VectorString& values, const std::string& delimiter) {
     size_t start = 0;
     size_t end   = line.find(delimiter);
     while (end != std::string::npos) {
@@ -121,7 +137,7 @@ bool splitByString(const std::string& line, std::vector<std::string>& values, co
     return !values.empty();
 }
 
-bool parseKeyValue(const std::string& line, std::string& key, std::vector<std::string>& values) {
+bool parseKeyValue(const std::string& line, std::string& key, VectorString& values) {
     std::stringstream ss(line);
     ss >> key;
     if (key.empty())
@@ -151,7 +167,7 @@ size_t convertMaxBodySize(const std::string& maxBody) {
     return size;
 }
 
-bool isStringInVector(const std::string& toFind, const std::vector<std::string>& fromFind) {
+bool isStringInVector(const std::string& toFind, const VectorString& fromFind) {
     for (size_t i = 0; i < fromFind.size(); i++) {
         if (fromFind[i] == toFind) {
             return true;

@@ -117,20 +117,26 @@ bool ServerManager::acceptNewConnection(Server* server) {
 }
 
 void ServerManager::handleClientRead(int clientFd) {
-    Client* client = clients[clientFd];
+    Client* client = getValue(clients, clientFd, (Client*)NULL);
+    if (client == NULL) {
+        closeClientConnection(clientFd);
+        return;
+    }
 
     if (client->receiveData() <= 0) {
         closeClientConnection(clientFd);
         return;
     }
     Logger::info("[INFO]: Data received from client");
-    Server* server = clientToServer[clientFd];
+    Server* server = getValue(clientToServer, clientFd, (Server*)NULL);
     if (server)
         processRequest(client, server);
 }
 
 void ServerManager::handleClientWrite(int clientFd) {
-    Client* client = clients[clientFd];
+    Client* client = getValue(clients, clientFd, (Client*)NULL);
+    if (client == NULL)
+        return;
 
     if (client->getStoreSendData().empty())
         return;
@@ -202,8 +208,11 @@ void ServerManager::closeClientConnection(int clientFd) {
             break;
         }
     }
-    clients[clientFd]->closeConnection();
-    delete clients[clientFd];
+    Client* c = getValue(clients, clientFd, (Client*)NULL);
+    if (c) {
+        c->closeConnection();
+        delete c;
+    }
     clients.erase(clientFd);
     clientToServer.erase(clientFd);
 }

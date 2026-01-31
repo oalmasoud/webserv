@@ -1,8 +1,8 @@
 #ifndef CONFIG_PARSER_HPP
 #define CONFIG_PARSER_HPP
 
-#include <map>
 #include <iostream>
+#include <map>
 #include <vector>
 #include "../utils/Utils.hpp"
 #include "LocationConfig.hpp"
@@ -11,8 +11,8 @@
 class ConfigParser {
    public:
     ConfigParser();
-    ConfigParser(const ConfigParser& other  );
-    ConfigParser &operator=(const ConfigParser& other);
+    ConfigParser(const ConfigParser& other);
+    ConfigParser& operator=(const ConfigParser& other);
     ConfigParser(const std::string& f);
     ~ConfigParser();
 
@@ -20,9 +20,9 @@ class ConfigParser {
     std::string               getHttpClientMaxBody() const;
     std::vector<ServerConfig> getServers() const;
 
-    typedef bool (ServerConfig::*ServerSetter)(const std::vector<std::string>&);
+    typedef bool (ServerConfig::*ServerSetter)(const VectorString&);
     typedef std::map<std::string, ServerSetter> ServerDirectiveMap;
-    typedef bool (LocationConfig::*LocationSetter)(const std::vector<std::string>&);
+    typedef bool (LocationConfig::*LocationSetter)(const VectorString&);
     typedef std::map<std::string, LocationSetter> LocationDirectiveMap;
 
    private:
@@ -33,7 +33,7 @@ class ConfigParser {
     Scope                     scope;
     size_t                    curr_index;
     std::string               httpClientMaxBody;
-    std::vector<std::string>  lines;
+    VectorString              lines;
     ServerDirectiveMap        serverDirectives;
     LocationDirectiveMap      locationDirectives;
 

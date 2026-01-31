@@ -1,10 +1,7 @@
 #include "HttpResponse.hpp"
 
 HttpResponse::HttpResponse(const HttpResponse& other)
-    : statusCode(other.statusCode),
-      statusMessage(other.statusMessage),
-      headers(other.headers),
-      body(other.body) {}
+    : statusCode(other.statusCode), statusMessage(other.statusMessage), headers(other.headers), body(other.body) {}
 
 HttpResponse& HttpResponse::operator=(const HttpResponse& other) {
     if (this != &other) {
@@ -28,7 +25,8 @@ void HttpResponse::setStatus(int code, const std::string& message) {
 }
 
 void HttpResponse::addHeader(const std::string& key, const std::string& value) {
-    headers[key] = value;
+    std::string valueFind = getValue(headers, key, std::string());
+    headers[key]          = valueFind.empty() ? value : valueFind + ", " + value;
 }
 
 void HttpResponse::setBody(const std::string& content) {
@@ -40,7 +38,7 @@ std::string HttpResponse::httpToString() const {
     std::string response = "HTTP/1.1 ";
     response += typeToString(statusCode);
     response += " " + statusMessage + "\r\n";
-    for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+    for (MapString::const_iterator it = headers.begin(); it != headers.end(); ++it) {
         response += it->first + ": " + it->second + "\r\n";
     }
 
