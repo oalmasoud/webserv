@@ -2,9 +2,17 @@
 #define SERVER_CONFIG_HPP
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <vector>
 #include "../utils/Logger.hpp"
 #include "LocationConfig.hpp"
+
+struct ListenAddress {
+    std::string interface;
+    int port;
+    ListenAddress() : interface(""), port(-1) {}
+    ListenAddress(const std::string& iface, int p) : interface(iface), port(p) {}
+};
 
 class ServerConfig {
     public:
@@ -21,28 +29,36 @@ class ServerConfig {
     bool setRoot(const std::vector<std::string>& root);
     void setRoot(const std::string& root);
     bool setListen(const std::vector<std::string>& l);
+    bool setErrorPage(const std::vector<std::string>& values);
     void addLocation(const LocationConfig& loc);
 
     //getters
-    int                                getPort() const;
-    std::string                        getInterface() const;
-    std::vector<LocationConfig>&       getLocations(); // to set parameter in locations from server
-    const std::vector<LocationConfig>& getLocations() const;
-    std::string                        getServerName() const;
-    std::string                        getRoot() const;
-    std::vector<std::string>           getIndexes() const;
-    std::string                        getClientMaxBody() const;
+    int                                      getPort(size_t index = 0) const;
+    std::string                              getInterface(size_t index = 0) const;
+    const std::vector<ListenAddress>&        getListenAddresses() const;
+    bool                                     hasPort(int port) const;
+    std::vector<LocationConfig>&             getLocations(); // to set parameter in locations from server
+    const std::vector<LocationConfig>&       getLocations() const;
+    std::string                              getServerName(size_t index = 0) const;
+    const std::vector<std::string>&          getServerNames() const;
+    bool                                     hasServerName(const std::string& name) const;
+    std::string                              getRoot() const;
+    std::vector<std::string>                 getIndexes() const;
+    std::string                              getClientMaxBody() const;
+    const std::map<int, std::string>&        getErrorPages() const;
+    std::string                              getErrorPage(int code) const;
+    bool                                     hasErrorPage(int code) const;
 
    private:
     // required server parameters
-    int                         port;
-    std::string                 interface;
+    std::vector<ListenAddress>  listenAddresses;
     std::vector<LocationConfig> locations; // it least one location
 
     // optional server parameters
-    std::string              serverName;        // default: ""
-    std::string              root;              // default: use for location if not set(be required)
-    std::vector<std::string> indexes;           // default: "index.html"
-    std::string              clientMaxBodySize; // default: "1M" or inherited from http config
+    std::vector<std::string>   serverNames;       // default: empty, can have multiple names
+    std::string                root;              // default: use for location if not set(be required)
+    std::vector<std::string>   indexes;           // default: "index.html"
+    std::string                clientMaxBodySize; // default: "1M" or inherited from http config
+    std::map<int, std::string> errorPages;        // maps error code to page path
 };
 #endif

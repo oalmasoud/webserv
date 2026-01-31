@@ -145,6 +145,7 @@ ConfigParser::ServerDirectiveMap ConfigParser::getServerDirectives()
     m["root"] = &ServerConfig::setRoot;
     m["index"] = &ServerConfig::setIndexes;
     m["client_max_body_size"] = &ServerConfig::setClientMaxBody;
+    m["error_page"] = &ServerConfig::setErrorPage;
 
     return m;
 }
@@ -178,8 +179,16 @@ bool ConfigParser::parseServer()
         if (!parseServerDirective(t, srv))
             return false;
     }
-    if (srv.getPort() == -1 || srv.getInterface().empty())
+    if (srv.getListenAddresses().empty())
         return Logger::error("server missing listen directive");
+    if (srv.getRoot().empty())
+        return Logger::error("server missing root directive");
+    if (srv.getIndexes().empty())
+        return Logger::error("server missing index directive");
+    if (srv.getClientMaxBody().empty())
+        return Logger::error("server missing client_max_body_size directive");
+    if (srv.getErrorPages().empty())
+        return Logger::error("server missing error_page directive");
     if (srv.getLocations().empty())
         return Logger::error("at least one location is required");
     servers.push_back(srv);
@@ -272,26 +281,17 @@ bool ConfigParser::validate()
     for (size_t i = 0; i < servers.size(); i++)
     {
         ServerConfig &s = servers[i];
-        if (httpClientMaxBody.empty() && s.getClientMaxBody().empty())
-        {
-            httpClientMaxBody = "1M";
-            s.setClientMaxBody("1M");
-        }
-        if (!httpClientMaxBody.empty() && s.getClientMaxBody().empty())
-            s.setClientMaxBody(httpClientMaxBody);
         std::vector<LocationConfig> &locs = s.getLocations();
         for (size_t j = 0; j < locs.size(); j++)
         {
             if (locs[j].getRoot().empty())
-            {
-                if (s.getRoot().empty())
-                    return Logger::error("location has no root and server has no root");
                 locs[j].setRoot(s.getRoot());
-            }
             if (locs[j].getAllowedMethods().empty())
                 locs[j].addAllowedMethod("GET");
             if (locs[j].getClientMaxBody().empty())
                 locs[j].setClientMaxBody(s.getClientMaxBody());
+            if (locs[j].getIndexes().empty())
+                locs[j].setIndexes(s.getIndexes());
         }
     }
     return true;
